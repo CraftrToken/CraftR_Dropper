@@ -265,7 +265,7 @@ contract CraftrDropper is Ownable
      * Given a token address, the function checks all airdrops with the same address
      * @return totalTokensAvailable is the tokens calculated
      */
-    function getTokensAvailableToMe() view public returns (uint)
+    function getTokensAvailableToMe() public returns (uint)
     {
         // Get User instance, given the sender account
         User storage user = signups[msg.sender];
@@ -282,7 +282,7 @@ contract CraftrDropper is Ownable
                 totalTokensAvailable = totalTokensAvailable.add(user.value);
             }
         }
-        return totalTokensAvailable;
+        return totalTokensAvailable.div(10**18);
     }
 
     /**
@@ -328,7 +328,7 @@ contract CraftrDropper is Ownable
         emit TokenWithdrawn(contractAddress,msg.sender,totalTokensToTransfer,now);
     }
 
-    function airdropsCount() public view returns (uint)
+    function activeAirdrops() public view returns (uint)
     {
         return airdrops.length;
     }
