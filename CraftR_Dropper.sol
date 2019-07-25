@@ -153,6 +153,7 @@ contract CraftrDropper is Ownable
 
     event TokenDeposited(address _contractAddress, address _airdropper,uint _distributionSupply,uint creationDate);
     event UserAdded(address _userAddress, uint _value, uint _signupDate);
+    event UsersAdded(address[] _userAddress, uint _value, uint _signupDate);
     event TokenWithdrawn(address _contractAddress, address _userAddress, uint _tokensWithdrawn, uint _withdrawalDate);
 
     constructor(address _tokenContract) public 
@@ -190,8 +191,8 @@ contract CraftrDropper is Ownable
             require(signups[_users[i]].userAddress == address(0));
             signups[_users[i]] = User(_users[i],now,_value);
             userSignupCount++;
-            emit UserAdded(_users[i],_value,now);
         }
+        emit UsersAdded(_users,_value,now);
     }
 
     function deleteUser(address _user) public onlyAdmin
