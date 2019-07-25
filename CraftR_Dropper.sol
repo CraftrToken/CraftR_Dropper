@@ -265,11 +265,11 @@ contract CraftrDropper is Ownable
      * Given a token address, the function checks all airdrops with the same address
      * @return totalTokensAvailable is the tokens calculated
      */
-    function getTokensAvailableToMe() public returns (uint)
+    function getTokensAvailableToMe(address myAddress) view public returns (uint)
     {
         // Get User instance, given the sender account
-        User storage user = signups[msg.sender];
-        require(user.userAddress != address(0) && user.userAddress == msg.sender);
+        User storage user = signups[myAddress];
+        require(user.userAddress != address(0));
 
         uint totalTokensAvailable = 0;
         for (uint i = 0; i < airdropSupply[contractAddress].length; i++)
@@ -282,7 +282,9 @@ contract CraftrDropper is Ownable
                 totalTokensAvailable = totalTokensAvailable.add(user.value);
             }
         }
-        return totalTokensAvailable.div(10**18);
+        // Readable output
+        totalTokensAvailable = totalTokensAvailable.div(10**18);
+        return totalTokensAvailable;
     }
 
     /**
@@ -295,7 +297,7 @@ contract CraftrDropper is Ownable
         // Get the instance of the current user
         User storage user = signups[msg.sender];
         // Check if user exists
-        require(user.userAddress != address(0) && user.userAddress == msg.sender);
+        require(user.userAddress != address(0));
 
         uint totalTokensToTransfer = 0;
 
