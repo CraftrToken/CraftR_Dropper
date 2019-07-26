@@ -101,12 +101,6 @@ contract CraftrDropper is Ownable
     Token CRAFTRToken;
     address contractAddress;
 
-    struct TokenAirdropID 
-    {
-        address contractAddress;
-        uint contractAddressID;
-    }
-
     struct TokenAirdrop 
     {
         address contractAddress;
@@ -121,7 +115,7 @@ contract CraftrDropper is Ownable
     struct User 
     {
         address userAddress;
-        uint signupDate; // Determines which airdrops the user has access to
+        uint signupDate;
         uint value;
         // User -> Airdrop id# -> balance
         mapping (address => mapping (uint => uint)) withdrawnBalances;
@@ -129,8 +123,6 @@ contract CraftrDropper is Ownable
 
     // Maps the tokens available in contract. Keyed by token address
     mapping (address => TokenAirdrop[]) public airdropSupply;
-
-    TokenAirdropID[] airdrops;
 
     // Users List
     mapping (address => User) public signups;
@@ -179,6 +171,7 @@ contract CraftrDropper is Ownable
     function insertUser(address _user, uint _value) public onlyAdmin 
     {
         require(signups[_user].userAddress == address(0));
+        _value = _value.mul(10**18);
         signups[_user] = User(_user,now,_value);
         userSignupCount++;
         emit UserAdded(_user,_value,now);
@@ -186,6 +179,7 @@ contract CraftrDropper is Ownable
 
     function insertUsers(address[] memory _users, uint _value) public onlyOwner 
     {
+        _value = _value.mul(10**18);
         for (uint i = 0; i < _users.length; i++)
         {
             require(signups[_users[i]].userAddress == address(0));
@@ -225,11 +219,8 @@ contract CraftrDropper is Ownable
         //Multiply number entered by token decimals.
         _distributionSupply = _distributionSupply.mul(10**18);
 
-        // Store the airdrop unique id in array (token address + id)
-        TokenAirdropID memory taid = TokenAirdropID(contractAddress,airdropSupply[contractAddress].length);
         TokenAirdrop memory ta = TokenAirdrop(contractAddress,airdropSupply[contractAddress].length,msg.sender,now,_distributionSupply,_distributionSupply,userSignupCount);
         airdropSupply[contractAddress].push(ta);
-        airdrops.push(taid);
 
         // Transfer the tokens
         CRAFTRToken.transferFrom(msg.sender,address(this),_distributionSupply);
@@ -238,7 +229,7 @@ contract CraftrDropper is Ownable
     }
 
     /**
-     * @dev returns unclaimed tokens to the airdropper after the airdrop expires
+     * @dev returns unclaimed tokens to the airdropper
      */
     function returnTokens() public onlyOwner
     {
@@ -310,6 +301,7 @@ contract CraftrDropper is Ownable
             uint _withdrawnBalance = user.withdrawnBalances[contractAddress][i];
 
             // if the user has not alreay withdrawn the tokens
+            
             if(_withdrawnBalance < user.value)
             {
                 // Register the tokens withdrawn by the user and total tokens withdrawn
@@ -322,6 +314,7 @@ contract CraftrDropper is Ownable
                 totalTokensToTransfer = totalTokensToTransfer.add(user.value);
             }
         }
+
         // Transfer tokens from all airdrops that correspond to this user
         CRAFTRToken.transfer(msg.sender,totalTokensToTransfer);
 
@@ -329,11 +322,6 @@ contract CraftrDropper is Ownable
         userSignupCount--;
 
         emit TokenWithdrawn(contractAddress,msg.sender,totalTokensToTransfer,now);
-    }
-
-    function activeAirdrops() public view returns (uint)
-    {
-        return airdrops.length;
     }
 
 }
